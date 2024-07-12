@@ -50,7 +50,7 @@ beforeEach(() => {
   setupDataSources(dataSources.loki);
 });
 
-describe.skip('Recording rules', () => {
+describe('Recording rules', () => {
   it('renders ', async () => {
     const user = userEvent.setup();
 
