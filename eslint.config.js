@@ -238,6 +238,13 @@ module.exports = [
       'dot-notation': 'error',
       'prefer-const': 'error',
       'react/no-unused-prop-types': 'error',
+      'no-unused-vars': [
+        'error',
+        {
+          destructuredArrayIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
     },
   },
   {
