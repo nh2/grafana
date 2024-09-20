@@ -712,7 +712,7 @@ export const grantUserPermissions = (permissions: AccessControlAction[]) => {
     .mockImplementation((action) => permissions.includes(action as AccessControlAction));
 };
 
-export const grantUserRole = () => {
+export const grantAllUserRoles = () => {
   jest.spyOn(contextSrv, 'hasRole').mockReturnValue(true);
 };
 
