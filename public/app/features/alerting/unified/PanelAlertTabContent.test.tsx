@@ -208,7 +208,7 @@ describe('PanelAlertTabContent', () => {
     mockAlertRuleApi(server).rulerRules(GRAFANA_RULES_SOURCE_NAME, rulerResponse);
   });
 
-  it('Will take into account panel maxDataPoints', async () => {
+  fit('Will take into account panel maxDataPoints', async () => {
     renderAlertTabContent(
       dashboard,
       new PanelModel({

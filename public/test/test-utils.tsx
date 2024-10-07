@@ -15,19 +15,27 @@ import {
   LocationServiceProvider,
   setAppEvents,
   setLocationService,
+  setPluginComponentHook,
   setPluginComponentsHook,
+  setPluginExtensionGetter,
+  setPluginExtensionsHook,
   setPluginLinksHook,
   setReturnToPreviousHook,
+  usePluginComponent,
+  usePluginComponents,
+  usePluginLinks,
 } from '@grafana/runtime';
 import appEvents from 'app/core/app_events';
 import { GrafanaContext, GrafanaContextType, useReturnToPreviousInternal } from 'app/core/context/GrafanaContext';
 import { ModalsContextProvider } from 'app/core/context/ModalsContextProvider';
+import { ExtensionRegistriesProvider } from 'app/features/plugins/extensions/ExtensionRegistriesContext';
+import { createPluginExtensionsGetter } from 'app/features/plugins/extensions/getPluginExtensions';
 import { setupPluginExtensionRegistries } from 'app/features/plugins/extensions/registry/setup';
-import { createUsePluginComponents } from 'app/features/plugins/extensions/usePluginComponents';
-import { createUsePluginLinks } from 'app/features/plugins/extensions/usePluginLinks';
+import { createUsePluginExtensions } from 'app/features/plugins/extensions/usePluginExtensions';
 import { configureStore } from 'app/store/configureStore';
 import { StoreState } from 'app/types/store';
 
+// createPluginExtensionsGetter;
 interface ExtendedRenderOptions extends RenderOptions {
   /**
    * Optional store to use for rendering. If not provided, a fresh store will be generated
@@ -57,23 +65,30 @@ interface ExtendedRenderOptions extends RenderOptions {
 /** Perform the same setup that we expect `app.ts` to have done when our components are rendering "for real" */
 const performAppSetup = (options: ExtendedRenderOptions) => {
   const { historyOptions, pluginLinks } = options;
+  const store = options.store || configureStore();
   // Create a fresh location service for each test - otherwise we run the risk
   // of it being stateful in between runs
   const history = createMemoryHistory(historyOptions);
   const locationService = new HistoryWrapper(history);
   setLocationService(locationService);
+  setAppEvents(appEvents);
 
   const pluginExtensionsRegistries = setupPluginExtensionRegistries();
-  setPluginLinksHook(pluginLinks || createUsePluginLinks(pluginExtensionsRegistries.addedLinksRegistry));
-  setPluginComponentsHook(createUsePluginComponents(pluginExtensionsRegistries.addedComponentsRegistry));
+  // console.log(pluginExtensionsRegistries);
 
-  setAppEvents(appEvents);
+  setPluginExtensionGetter(createPluginExtensionsGetter(pluginExtensionsRegistries));
+  setPluginExtensionsHook(createUsePluginExtensions(pluginExtensionsRegistries));
+  setPluginLinksHook(usePluginLinks);
+  setPluginComponentHook(usePluginComponent);
+  setPluginComponentsHook(usePluginComponents);
 
   setReturnToPreviousHook(useReturnToPreviousInternal);
 
   return {
     locationService,
     history,
+    store,
+    pluginExtensionsRegistries,
   };
 };
 
@@ -86,10 +101,8 @@ const getWrapper = (
     grafanaContext?: Partial<GrafanaContextType>;
   }
 ) => {
-  const { store, renderWithRouter, grafanaContext } = options;
-  const reduxStore = store || configureStore();
-
-  const { locationService, history } = performAppSetup(options);
+  const { renderWithRouter, grafanaContext } = options;
+  const { locationService, history, store: reduxStore, pluginExtensionsRegistries } = performAppSetup(options);
 
   /**
    * Conditional router - either a MemoryRouter or just a Fragment
@@ -113,13 +126,15 @@ const getWrapper = (
     return (
       <Provider store={reduxStore}>
         <GrafanaContext.Provider value={context}>
-          <PotentialRouter>
-            <LocationServiceProvider service={locationService}>
-              <PotentialCompatRouter>
-                <ModalsContextProvider>{children}</ModalsContextProvider>
-              </PotentialCompatRouter>
-            </LocationServiceProvider>
-          </PotentialRouter>
+          <ExtensionRegistriesProvider registries={pluginExtensionsRegistries}>
+            <PotentialRouter>
+              <LocationServiceProvider service={locationService}>
+                <PotentialCompatRouter>
+                  <ModalsContextProvider>{children}</ModalsContextProvider>
+                </PotentialCompatRouter>
+              </LocationServiceProvider>
+            </PotentialRouter>
+          </ExtensionRegistriesProvider>
         </GrafanaContext.Provider>
       </Provider>
     );
