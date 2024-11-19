@@ -4,18 +4,29 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/grafana/authlib/claims"
+	"github.com/grafana/grafana/pkg/apimachinery/identity"
+	grafanaapiserver "github.com/grafana/grafana/pkg/services/apiserver"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 )
 
-type resourceClient struct {
-	//	dyn, err := dynamic.NewForConfig(pk8s.clientConfigProvider.GetDirectRestConfig(c))
-	config *rest.Config
+type resourceClientProvider struct {
+	clientConfigProvider grafanaapiserver.DirectRestConfigProvider
+}
 
+type resourceClient struct {
 	// Good/Bad to reuse client????
+	config  *rest.Config
 	clients map[schema.GroupVersionKind]dynamic.NamespaceableResourceInterface
 	mutex   sync.Mutex
+}
+
+func newResourceClientProvider(clientConfigProvider grafanaapiserver.DirectRestConfigProvider) *resourceClientProvider {
+	return &resourceClientProvider{
+		clientConfigProvider: clientConfigProvider,
+	}
 }
 
 func newResourceClient(config *rest.Config) *resourceClient {
@@ -23,6 +34,17 @@ func newResourceClient(config *rest.Config) *resourceClient {
 		config:  config,
 		clients: make(map[schema.GroupVersionKind]dynamic.NamespaceableResourceInterface),
 	}
+}
+
+func (c *resourceClientProvider) Client(namespace, idToken string) *resourceClient {
+	// The service user.. TODO, this should be real
+	serviceUser := &identity.StaticRequester{
+		Type:           claims.TypeProvisioning,
+		IsGrafanaAdmin: true,
+		Namespace:      namespace,
+		IDToken:        idToken,
+	}
+	return newResourceClient(c.clientConfigProvider.GetDirectRestConfigForRequester(serviceUser))
 }
 
 func (c *resourceClient) Resource(gvk schema.GroupVersionKind) (dynamic.NamespaceableResourceInterface, error) {

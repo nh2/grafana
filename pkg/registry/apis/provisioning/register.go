@@ -20,13 +20,10 @@ import (
 	"k8s.io/apiserver/pkg/registry/generic/registry"
 	"k8s.io/apiserver/pkg/registry/rest"
 	genericapiserver "k8s.io/apiserver/pkg/server"
-	clientrest "k8s.io/client-go/rest"
 	"k8s.io/kube-openapi/pkg/common"
 	"k8s.io/kube-openapi/pkg/spec3"
 	"k8s.io/kube-openapi/pkg/validation/spec"
 
-	"github.com/grafana/authlib/claims"
-	"github.com/grafana/grafana/pkg/apimachinery/identity"
 	provisioning "github.com/grafana/grafana/pkg/apis/provisioning/v0alpha1"
 	grafanaregistry "github.com/grafana/grafana/pkg/apiserver/registry/generic"
 	grafanaapiserver "github.com/grafana/grafana/pkg/services/apiserver"
@@ -42,17 +39,17 @@ var (
 
 // This is used just so wire has something unique to return
 type ProvisioningAPIBuilder struct {
-	getter            rest.Getter
-	localFileResolver *LocalFolderResolver
-	client            *resourceClient
-	logger            *slog.Logger
+	getter                 rest.Getter
+	localFileResolver      *LocalFolderResolver
+	logger                 *slog.Logger
+	resourceClientProvider *resourceClientProvider
 }
 
-func NewProvisioningAPIBuilder(local *LocalFolderResolver, cfg *clientrest.Config) *ProvisioningAPIBuilder {
+func NewProvisioningAPIBuilder(local *LocalFolderResolver, clientConfigProvider grafanaapiserver.DirectRestConfigProvider) *ProvisioningAPIBuilder {
 	return &ProvisioningAPIBuilder{
-		localFileResolver: local,
-		logger:            slog.Default().With("logger", "provisioning-api-builder"),
-		client:            newResourceClient(cfg),
+		localFileResolver:      local,
+		logger:                 slog.Default().With("logger", "provisioning-api-builder"),
+		resourceClientProvider: newResourceClientProvider(clientConfigProvider),
 	}
 }
 
@@ -67,17 +64,10 @@ func RegisterAPIService(
 		return nil // skip registration unless opting into experimental apis
 	}
 
-	// The service user.. TODO, this should be real
-	serviceUser := &identity.StaticRequester{
-		Type:           claims.TypeProvisioning,
-		IsGrafanaAdmin: true,
-		Namespace:      "*",
-	}
-
 	builder := NewProvisioningAPIBuilder(&LocalFolderResolver{
 		ProvisioningPath: cfg.ProvisioningPath,
 		DevenvPath:       filepath.Join(cfg.HomePath, "devenv"),
-	}, clientConfigProvider.GetDirectRestConfigForRequester(serviceUser))
+	}, clientConfigProvider)
 	apiregistration.RegisterAPI(builder)
 	return builder
 }

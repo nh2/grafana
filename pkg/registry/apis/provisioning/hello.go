@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/grafana/grafana/pkg/apimachinery/identity"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -95,7 +96,14 @@ func (s *helloWorldSubresource) Connect(ctx context.Context, name string, opts r
 
 		write := r.URL.Query().Get("list")
 		if write != "" {
-			client, err := s.parent.client.Resource(schema.GroupVersionKind{
+			requester, err := identity.GetRequester(r.Context())
+			if err != nil {
+				responder.Error(err)
+				return
+			}
+			// Propagate user's identity even as we use a service account
+			client := s.parent.resourceClientProvider.Client(requester.GetNamespace(), requester.GetIDToken())
+			resource, err := client.Resource(schema.GroupVersionKind{
 				Group:   v1alpha1.GROUP,   // dashboard.grafana.app
 				Version: v1alpha1.VERSION, // "v0alpha1",
 				Kind:    "Dashboard",
@@ -105,7 +113,7 @@ func (s *helloWorldSubresource) Connect(ctx context.Context, name string, opts r
 				return
 			}
 
-			ttt, err := client.List(ctx, metav1.ListOptions{})
+			ttt, err := resource.List(ctx, metav1.ListOptions{})
 			if err != nil {
 				responder.Error(err)
 				return
