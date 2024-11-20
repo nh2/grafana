@@ -8,6 +8,7 @@ import {
   getErrorResponse,
   makeAllAlertmanagerConfigFetchFail,
 } from 'app/features/alerting/unified/mocks/server/configure';
+import { MIMIR_DATASOURCE_UID } from 'app/features/alerting/unified/mocks/server/constants';
 import {
   getAlertmanagerConfig,
   setAlertmanagerConfig,
@@ -93,9 +94,9 @@ const dataSources = {
     },
   }),
   mimir: mockDataSource<AlertManagerDataSourceJsonData>({
-    name: 'mimir',
+    name: 'MimirAlertmanager',
     type: DataSourceType.Alertmanager,
-    uid: 'mimir',
+    uid: MIMIR_DATASOURCE_UID,
     jsonData: {
       implementation: AlertManagerImplementation.mimir,
     },
