@@ -36,13 +36,6 @@ export { setPluginLinksHook, usePluginLinks } from './pluginExtensions/usePlugin
 
 export { isPluginExtensionLink, isPluginExtensionComponent } from './pluginExtensions/utils';
 export { setCurrentUser } from './user';
-export {
-  getScopesDashboardsService,
-  getScopesSelectorService,
-  initializeScopes,
-  ScopesDashboardsContext,
-  scopesDashboardsService,
-  ScopesSelectorContext,
-  scopesSelectorService,
-  useScopes,
-} from './ScopesContext';
+export { getScopesDashboardsService, getScopesSelectorService, initializeScopes } from './scopes';
+export { ScopesDashboardsContext, useScopesDashboards } from './ScopesDashboardsContext';
+export { ScopesSelectorContext, useScopesSelector } from './ScopesSelectorContext';
