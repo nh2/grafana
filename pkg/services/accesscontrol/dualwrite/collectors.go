@@ -400,6 +400,10 @@ func rolePermissionsCollector(store db.DB) legacyTupleCollector {
 func anonymousRoleBindingsCollector(cfg *setting.Cfg, orgService org.Service) legacyTupleCollector {
 	return func(ctx context.Context, orgID int64) (map[string]map[string]*openfgav1.TupleKey, error) {
 		tuples := make(map[string]map[string]*openfgav1.TupleKey)
+		object := zanzana.NewTupleEntry(zanzana.TypeRole, zanzana.TranslateBasicRole(cfg.AnonymousOrgRole), "")
+		// Object should be set to delete obsolete permissions
+		tuples[object] = make(map[string]*openfgav1.TupleKey)
+
 		o, err := orgService.GetByName(ctx, &org.GetOrgByNameQuery{Name: cfg.AnonymousOrgName})
 		if err != nil {
 			return tuples, nil
@@ -412,10 +416,9 @@ func anonymousRoleBindingsCollector(cfg *setting.Cfg, orgService org.Service) le
 		tuple := &openfgav1.TupleKey{
 			User:     zanzana.NewTupleEntry(zanzana.TypeAnonymous, "0", ""),
 			Relation: zanzana.RelationAssignee,
-			Object:   zanzana.NewTupleEntry(zanzana.TypeRole, zanzana.TranslateBasicRole(cfg.AnonymousOrgRole), ""),
+			Object:   object,
 		}
 
-		tuples[tuple.Object] = make(map[string]*openfgav1.TupleKey)
 		tuples[tuple.Object][tuple.String()] = tuple
 
 		return tuples, nil
