@@ -11,7 +11,7 @@ import {
   urlUtil,
 } from '@grafana/data';
 import { PromQuery } from '@grafana/prometheus';
-import { getScopesSelectorService, locationService, useChromeHeaderHeight } from '@grafana/runtime';
+import { scopesService, locationService, useChromeHeaderHeight } from '@grafana/runtime';
 import {
   AdHocFiltersVariable,
   ConstantVariable,
@@ -337,7 +337,7 @@ export class DataTrail extends SceneObjectBase<DataTrailState> {
       const deploymentEnvironments = await getDeploymentEnvironments(
         datasourceUid,
         timeRange,
-        getScopesSelectorService().state.scopes.map(({ scope }) => scope)
+        scopesService.state.value
       );
       const hasOtelResources = otelTargets.jobs.length > 0 && otelTargets.instances.length > 0;
       if (
@@ -488,7 +488,7 @@ export class DataTrail extends SceneObjectBase<DataTrailState> {
         // we're also passing the scopes so we get the labels that adhere to the scopes filters
         let values = await datasourceHelper.getTagKeys({
           filters,
-          scopes: getScopesSelectorService().state.scopes.map(({ scope }) => scope),
+          scopes: scopesService.state.value,
           queries: this.getQueries(),
         });
         values = sortResources(values, filters.map((f) => f.key).concat(currentKey ?? ''));
@@ -509,7 +509,7 @@ export class DataTrail extends SceneObjectBase<DataTrailState> {
         const values = await datasourceHelper.getTagValues({
           key: filter.key,
           filters,
-          scopes: getScopesSelectorService().state.scopes.map(({ scope }) => scope),
+          scopes: scopesService.state.value,
           queries: this.getQueries(),
         });
         return { replace: true, values };
