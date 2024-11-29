@@ -8,7 +8,6 @@ import {
   navigationLogger,
   reportInteraction,
   ScopesContext,
-  scopesService,
   SidecarContext_EXPERIMENTAL,
   sidecarServiceSingleton_EXPERIMENTAL,
 } from '@grafana/runtime';
@@ -25,6 +24,7 @@ import { ThemeProvider } from './core/utils/ConfigProvider';
 import { LiveConnectionWarning } from './features/live/LiveConnectionWarning';
 import { ExtensionRegistriesProvider } from './features/plugins/extensions/ExtensionRegistriesContext';
 import { pluginExtensionRegistries } from './features/plugins/extensions/registry/setup';
+import { getScopesService } from './features/scopes';
 import { ExperimentalSplitPaneRouterWrapper, RouterWrapper } from './routes/RoutesWrapper';
 
 interface AppWrapperProps {
@@ -107,7 +107,7 @@ export class AppWrapper extends Component<AppWrapperProps, AppWrapperState> {
                 <GlobalStyles />
                 <MaybeTimeRangeProvider>
                   <SidecarContext_EXPERIMENTAL.Provider value={sidecarServiceSingleton_EXPERIMENTAL}>
-                    <ScopesContext.Provider value={scopesService}>
+                    <ScopesContext.Provider value={getScopesService()}>
                       <ExtensionRegistriesProvider registries={pluginExtensionRegistries}>
                         <div className="grafana-app">
                           {config.featureToggles.appSidecar ? (
