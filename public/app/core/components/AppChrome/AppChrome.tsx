@@ -39,7 +39,7 @@ export function AppChrome({ children }: Props) {
   const scopes = useScopes();
   const scopesDashboards = useScopesDashboardsService();
   const isScopesDashboardsOpen = Boolean(
-    scopes.state.isEnabled && scopesDashboards.state.isOpened && !scopes.state.isReadOnly
+    scopes?.state.isEnabled && scopesDashboards?.state.isOpened && !scopes?.state.isReadOnly
   );
   const isSingleTopNav = config.featureToggles.singleTopNav;
   useMediaQueryChange({

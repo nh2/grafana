@@ -1,6 +1,6 @@
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, useContext } from 'react';
 import { useObservable } from 'react-use';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 
 import { Scope } from '@grafana/data';
 
@@ -21,50 +21,21 @@ export interface ScopesContextValue {
   exitReadOnly: () => void;
   enable: () => void;
   disable: () => void;
+  subscribeToState: (
+    cb: (newState: ScopesContextValue['state'], prevState: ScopesContextValue['state']) => void
+  ) => Subscription;
 }
-
-const noop = () => undefined;
-const defaultValue: ScopesContextValue = {
-  state: {
-    isEnabled: false,
-    isLoading: false,
-    isReadOnly: false,
-    pendingScopes: null,
-    value: [],
-  },
-  stateObservable: new Observable(),
-  setNewScopes: noop,
-  setCurrentScopes: noop,
-  enterLoadingMode: noop,
-  exitLoadingMode: noop,
-  enterReadOnly: noop,
-  exitReadOnly: noop,
-  enable: noop,
-  disable: noop,
-};
 
 export const ScopesContext = createContext<ScopesContextValue | undefined>(undefined);
 
 export function useScopes() {
   const context = useContext(ScopesContext);
 
+  useObservable(context?.stateObservable ?? new Observable(), context?.state);
+
   if (!context) {
-    return defaultValue;
+    return undefined;
   }
 
-  const state = useObservable(context.stateObservable, context.state);
-
-  return useMemo(() => {
-    return {
-      state,
-      setNewScopes: context.setNewScopes.bind(context),
-      setCurrentScopes: context.setCurrentScopes.bind(context),
-      enterLoadingMode: context.enterLoadingMode.bind(context),
-      exitLoadingMode: context.exitLoadingMode.bind(context),
-      enterReadOnly: context.enterReadOnly.bind(context),
-      exitReadOnly: context.exitReadOnly.bind(context),
-      enable: context.enable.bind(context),
-      disable: context.disable.bind(context),
-    };
-  }, [context, state]);
+  return context;
 }
