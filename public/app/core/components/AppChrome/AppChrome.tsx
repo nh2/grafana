@@ -3,7 +3,8 @@ import classNames from 'classnames';
 import { PropsWithChildren, useEffect } from 'react';
 
 import { GrafanaTheme2 } from '@grafana/data';
-import { config, locationSearchToObject, locationService, useScopes } from '@grafana/runtime';
+import { config, locationSearchToObject, locationService } from '@grafana/runtime';
+import { useScopes } from '@grafana/scenes';
 import { useStyles2, LinkButton, useTheme2 } from '@grafana/ui';
 import { useGrafana } from 'app/core/context/GrafanaContext';
 import { useMediaQueryChange } from 'app/core/hooks/useMediaQueryChange';
