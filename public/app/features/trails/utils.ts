@@ -18,6 +18,7 @@ import {
   SceneObject,
   SceneObjectState,
   SceneObjectUrlValues,
+  SceneScopesBridge,
   SceneTimeRange,
   sceneUtils,
   SceneVariable,
@@ -35,6 +36,10 @@ import { LOGS_METRIC, TRAILS_ROUTE, VAR_DATASOURCE_EXPR } from './shared';
 
 export function getTrailFor(model: SceneObject): DataTrail {
   return sceneGraph.getAncestor(model, DataTrail);
+}
+
+export function getScopesBridgeFor(model: SceneObject): SceneScopesBridge | undefined {
+  return sceneGraph.getScopesBridge(getTrailFor(model));
 }
 
 export function getTrailSettings(model: SceneObject): DataTrailSettings {

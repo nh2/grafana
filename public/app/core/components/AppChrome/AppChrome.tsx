@@ -11,7 +11,7 @@ import { useMediaQueryChange } from 'app/core/hooks/useMediaQueryChange';
 import { Trans } from 'app/core/internationalization';
 import store from 'app/core/store';
 import { CommandPalette } from 'app/features/commandPalette/CommandPalette';
-import { ScopesDashboards, useScopesDashboardsService } from 'app/features/scopes';
+import { ScopesDashboards } from 'app/features/scopes/dashboards/ScopesDashboards';
 import { KioskMode } from 'app/types';
 
 import { AppChromeMenu } from './AppChromeMenu';
@@ -38,9 +38,8 @@ export function AppChrome({ children }: Props) {
   const dockedMenuLocalStorageState = store.getBool(DOCKED_LOCAL_STORAGE_KEY, true);
   const menuDockedAndOpen = !state.chromeless && state.megaMenuDocked && state.megaMenuOpen;
   const scopes = useScopes();
-  const scopesDashboards = useScopesDashboardsService();
   const isScopesDashboardsOpen = Boolean(
-    scopes?.state.isEnabled && scopesDashboards?.state.isOpened && !scopes?.state.isReadOnly
+    scopes?.state.isEnabled && scopes?.state.isDrawerOpened && !scopes?.state.isReadOnly
   );
   const isSingleTopNav = config.featureToggles.singleTopNav;
   useMediaQueryChange({

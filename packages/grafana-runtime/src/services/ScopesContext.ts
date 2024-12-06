@@ -6,6 +6,7 @@ import { Scope } from '@grafana/data';
 
 export interface ScopesContextValue {
   state: {
+    isDrawerOpened: boolean;
     isEnabled: boolean;
     isLoading: boolean;
     isReadOnly: boolean;
@@ -15,6 +16,9 @@ export interface ScopesContextValue {
   changeScopes: (scopeNames: string[]) => void;
   enterReadOnly: () => void;
   exitReadOnly: () => void;
+  toggleDrawer: () => void;
+  openDrawer: () => void;
+  closeDrawer: () => void;
   enable: () => void;
   disable: () => void;
 }
@@ -33,6 +37,9 @@ export function useScopes() {
         changeScopes: context.changeScopes,
         enterReadOnly: context.enterReadOnly,
         exitReadOnly: context.exitReadOnly,
+        toggleDrawer: context.toggleDrawer,
+        openDrawer: context.openDrawer,
+        closeDrawer: context.closeDrawer,
         enable: context.enable,
         disable: context.disable,
       }
