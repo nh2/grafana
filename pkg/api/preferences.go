@@ -168,7 +168,7 @@ func (hs *HTTPServer) patchPreferencesFor(ctx context.Context, orgID, userID, te
 }
 
 // swagger:route GET /org/preferences org_preferences getOrgPreferences
-// W
+//
 // Get Current Org Prefs.
 //
 // Responses:
